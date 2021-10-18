@@ -14,23 +14,32 @@ namespace Component
 
         private:
 
-            uint64_t GenerateConst( Instruction::ParsedIType_Null instruction )
+            uint64_t GenerateConst( Instruction::ParsedIType_Null instruction, bool SignExtend )
             {
                 return instruction.garb;
             }
 
-            uint64_t GenerateConst( Instruction::ParsedIType_R instruction )
+            uint64_t GenerateConst( Instruction::ParsedIType_R instruction, bool SignExtend )
             {
                 // No constant to generate
                 return 0;
             }
 
-            uint64_t GenerateConst( Instruction::ParsedIType_I instruction )
+            uint64_t GenerateConst( Instruction::ParsedIType_I instruction, bool SignExtend )
             {
-                return instruction.imm0to11;
+                uint8_t signBit = instruction.imm0to11 >> 11;
+
+                uint64_t result = instruction.imm0to11;
+
+                if( SignExtend && (signBit != 0) )
+                {
+                    result |= ~(uint64_t)0xfff;
+                }
+
+                return result;
             }
 
-            uint64_t GenerateConst( Instruction::ParsedIType_S instruction )
+            uint64_t GenerateConst( Instruction::ParsedIType_S instruction, bool SignExtend )
             {
                 typedef struct __attribute__ ((__packed__))
                 {
@@ -40,10 +49,19 @@ namespace Component
                 } intermS;
 
                 intermS interm = { instruction.imm0to4, instruction.imm5to11, 0 };
-                return *(uint64_t*) &interm;
+                uint64_t result = *(uint64_t*) &interm;
+
+                uint8_t signBit = (uint8_t) (result >> 11);
+
+                if( SignExtend && (signBit != 0) )
+                {
+                    result |= ~(uint64_t)0xfff;
+                }
+
+                return result;
             }
 
-            uint64_t GenerateConst( Instruction::ParsedIType_SB instruction )
+            uint64_t GenerateConst( Instruction::ParsedIType_SB instruction, bool SignExtend )
             {
                 typedef struct __attribute__ ((__packed__))
                 {
@@ -75,15 +93,34 @@ namespace Component
 
                 intermSBtogether result = { 0, dec1.imm1to4, dec2.imm5to10, dec1.imm11, dec2.imm12, 0 };
 
-                return *(uint64_t*) &result;
+                uint64_t signExtendedResult = *(uint64_t*) &result;
+
+                uint8_t signBit = signExtendedResult >> 12;
+
+                if( SignExtend && (signBit != 0) )
+                {
+                    signExtendedResult |= ~(uint64_t)0xfff;
+                }
+
+                return signExtendedResult;
             }
 
-            uint64_t GenerateConst( Instruction::ParsedIType_U instruction )
+            uint64_t GenerateConst( Instruction::ParsedIType_U instruction, bool SignExtend )
             {
-                return ((uint64_t) instruction.imm12to31) << 12;
+                uint64_t result = ((uint64_t) instruction.imm12to31) << 12;
+
+                uint8_t signBit = (uint8_t) (result >> 31);
+
+                if( SignExtend && (signBit != 0) )
+                {
+                    result |= ~(uint64_t)0xffffffff;
+                }
+
+                return result;
+
             }
 
-            uint64_t GenerateConst( Instruction::ParsedIType_UJ instruction )
+            uint64_t GenerateConst( Instruction::ParsedIType_UJ instruction, bool SignExtend )
             {
                 typedef struct __attribute__ ((__packed__))
                 {
@@ -110,7 +147,16 @@ namespace Component
                 intermUJdecomp decomp = *(intermUJdecomp*) &imm12to19and11and1to10and20;
                 intermUJtogether result = { 0, decomp.imm1to10, decomp.imm11, decomp.imm12to19, decomp.imm20 };
 
-                return *(uint64_t*) &result;
+                uint64_t signExtendedResult = *(uint64_t*) &result;
+
+                uint8_t signBit = signExtendedResult >> 20;
+
+                if( SignExtend && (signBit != 0) )
+                {
+                    signExtendedResult |= ~(uint64_t)0xfffff;
+                }
+
+                return signExtendedResult;
             }
 
         public:
@@ -119,7 +165,7 @@ namespace Component
                 return Component_ID_ConstantGenerator;
             }
 
-            uint64_t GenerateConst( Instruction::ParsedInstruction instr )
+            uint64_t GenerateConst( Instruction::ParsedInstruction instr, bool SignExtend )
             {
                 static void * DispatchTable[] = { &&Case_Null, &&Case_R, &&Case_I, &&Case_S, &&Case_SB, &&Case_U, &&Case_UJ };
 
@@ -134,37 +180,37 @@ namespace Component
 
                 Case_Null:
                 {
-                    return GenerateConst( instr.ParsedInst.Null );
+                    return GenerateConst( instr.ParsedInst.Null, SignExtend );
                 };
 
                 Case_R:
                 {
-                    return GenerateConst( instr.ParsedInst.R );
+                    return GenerateConst( instr.ParsedInst.R, SignExtend );
                 };
 
                 Case_I:
                 {
-                    return GenerateConst( instr.ParsedInst.I );
+                    return GenerateConst( instr.ParsedInst.I, SignExtend );
                 };
 
                 Case_S:
                 {
-                    return GenerateConst( instr.ParsedInst.S );
+                    return GenerateConst( instr.ParsedInst.S, SignExtend );
                 };
 
                 Case_SB:
                 {
-                    return GenerateConst( instr.ParsedInst.SB );
+                    return GenerateConst( instr.ParsedInst.SB, SignExtend );
                 };
 
                 Case_U:
                 {
-                    return GenerateConst( instr.ParsedInst.U );
+                    return GenerateConst( instr.ParsedInst.U, SignExtend );
                 };
 
                 Case_UJ:
                 {
-                    return GenerateConst( instr.ParsedInst.UJ );
+                    return GenerateConst( instr.ParsedInst.UJ, SignExtend );
                 };
 
                 Case_Bad:

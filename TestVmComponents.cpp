@@ -536,7 +536,25 @@ void TestConstantGenerator()
     uint32_t instr15 = 0x00c000ef; // jal x1, label2
     uint32_t instr16 = 0x00000263; // beq x0, x0, label2
 
-    uint32_t instructions[] = { instr1, instr2, instr3, instr4, instr5, instr6, instr7, instr8, instr9, instr10, instr11, instr12, instr13, instr14, instr15, instr16 };
+    uint32_t instr17 = 0xFFF00093; // addi x1, x0, -1
+    uint32_t instr18 = 0x7FF00093; // addi x1, x0, 0x7ff
+
+    uint32_t instr19 = 0xFFDFF0EF; // jal x1 -4
+    uint32_t instr20 = 0x004000EF; // jal x1 4
+
+    uint32_t instr21 = 0xFFF000E7; // jalr x1 x0 -1
+    uint32_t instr22 = 0x7FF000E7; // jalr x1 x0 0x7ff
+
+    uint32_t instr23 = 0xFE0008E3; // beq x0 x0 -16
+    uint32_t instr24 = 0x7E0008E3; // beq x0 x0 0x7E0 ?
+
+    uint32_t instr25 = 0xFFFFF0B7; // lui x1 0xfffff
+    uint32_t instr26 = 0x7FFFF0B7; // lui x1 0x7ffff
+
+    uint32_t instr27 = 0xFC102C23; // sw x1 -40 x0
+    uint32_t instr28 = 0x7C102C23; // sq x1 something x0
+
+    uint32_t instructions[] = { instr1, instr2, instr3, instr4, instr5, instr6, instr7, instr8, instr9, instr10, instr11, instr12, instr13, instr14, instr15, instr16, instr17, instr18, instr19, instr20, instr21, instr22, instr23, instr24, instr25, instr26, instr27, instr28 };
     uint8_t numInstructions = sizeof( instructions ) / sizeof( uint32_t );
 
     Instruction::InstructionParser leParser;
@@ -556,8 +574,10 @@ void TestConstantGenerator()
     for( iterator = 0; iterator < numInstructions; iterator++ )
     {
         Instruction::ParsedInstruction lInstruction = leParser.ParseInstruction( instructions[iterator] );
-        uint64_t leConst = generator.GenerateConst( lInstruction );
-        printf( "Instruction %x generated %lx\n", instructions[iterator], leConst );
+        uint64_t leConst = generator.GenerateConst( lInstruction, true );
+        printf( "Instruction %x generated %lx (sign extended)\n", instructions[iterator], leConst );
+        leConst = generator.GenerateConst( lInstruction, false );
+        printf( "Instruction %x generated %lx (not sign extended)\n", instructions[iterator], leConst );
     }
     
 }

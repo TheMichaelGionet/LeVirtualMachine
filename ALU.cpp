@@ -9,7 +9,7 @@
 namespace Component
 {
 
-    class ALU : public Component
+    class ALU : public Component_t
     {
         public:
             typedef enum

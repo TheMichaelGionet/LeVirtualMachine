@@ -9,7 +9,7 @@
 namespace Component
 {
 
-    class ConstantGenerator : public Component
+    class ConstantGenerator : public Component_t
     {
 
         private:

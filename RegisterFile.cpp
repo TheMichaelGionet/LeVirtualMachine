@@ -11,7 +11,7 @@ namespace Component
     // All register files here have the convention that r0 = (T) 0.
     // Assume that T can cast 0 to T.
     template <typename T, unsigned int Num>
-    class RegisterFile : public Component
+    class RegisterFile : public Component_t
     {
         protected:
             T Registers[ Num ];
@@ -80,10 +80,6 @@ namespace Component
                 return Component_ID_FloatRegisterFile;
             }
     };
-
-
-
-
 
 
 };

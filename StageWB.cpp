@@ -3,20 +3,20 @@
 
 #include <stdint.h>
 #include "HwError.hpp"
-#include "Component.hpp"
 #include "Pipeline.hpp"
+#include "Component.hpp"
 #include "RegisterFile.cpp"
 
 namespace Stage
 {
 
-    class WB : public Component::Component
+    class WB : public Component::Component_t
     {
         private:
             Component::IntegerRegisterFile * RegF = nullptr; // this lives in the ID stage, but this is the only way to access it from here.
 
         public:
-            WB( IntegerRegisterFile * regf )
+            WB( Component::IntegerRegisterFile * regf )
             {
                 RegF = regf;
             }
@@ -29,14 +29,14 @@ namespace Stage
             void Perform( Pipeline_MEMtoWB pipe )
             {
                 SetLastHwError( HwError_NoError );
-                if( pipe.DoWB == 1 )
+                if( pipe.WBParams.DoWB == 1 )
                 {
                     if( RegF != nullptr )
                     {
-                        RegF->SetVal( pipe.Reg, pipe.Val );
+                        RegF->SetVal( pipe.WBParams.Reg, pipe.WBParams.Val );
                         SetLastHwError( RegF->LastHwError() );
                     }
-                    else
+                    else;
                         SetLastHwError( HwError_RegisterFileMissing );
                 }
             }

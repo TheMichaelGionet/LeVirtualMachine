@@ -11,7 +11,7 @@
 
 namespace Component
 {
-    class Peripheral : public MemoryAccess, public Component
+    class Peripheral : public MemoryAccess, public Component_t
     {
         private:
             uint64_t startLocation;
@@ -30,7 +30,7 @@ namespace Component
 
     }
 
-    class BUS : public Component, public MemoryAccess
+    class BUS : public Component_t, public MemoryAccess
     {
         private:
             

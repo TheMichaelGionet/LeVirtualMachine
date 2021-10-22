@@ -85,7 +85,7 @@ namespace Component
 
     // Setup() depends on whether this is running on the raw hardware or not.
     // Setup, the constructor and destructor all depend on this.
-    class RawMemoryBase : public Component, public MemoryAccess
+    class RawMemoryBase : public Component_t, public MemoryAccess
     {
         protected:
             uint8_t * Memory;

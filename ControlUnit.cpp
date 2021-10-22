@@ -17,7 +17,7 @@ namespace Component
     // This Control Unit simply takes an input of an instruction and the current PC value and sets a bunch of control signals based on it.
     //
 
-    class ControlUnit : public Component
+    class ControlUnit : public Component_t
     {
         private:
 

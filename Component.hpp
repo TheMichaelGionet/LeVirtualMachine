@@ -28,7 +28,7 @@ namespace Component
     } Component_ID;
 
 
-    class Component
+    class Component_t
     {
         private:
             HwError lastHwError = HwError_NoError;

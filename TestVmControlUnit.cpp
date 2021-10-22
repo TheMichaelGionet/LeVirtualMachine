@@ -87,7 +87,7 @@ void TestControlUnit()
         HwError leLast = HwError_NoError;
         if( (leLast = leSignals.LastHwError()) != HwError_NoError )
         {
-            printf( "An Error Occurred in obtaining control signals: %x\n", leLast );
+            printf( "An Error Occurred in obtaining control signals: %s\n", DecodeHwError( leLast ) );
             return;
         }
 

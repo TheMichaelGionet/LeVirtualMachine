@@ -2,6 +2,7 @@
 #define VM_Stage_MEM
 
 #include <stdint.h>
+#include "Common.hpp"
 #include "HwError.hpp"
 #include "Component.hpp"
 #include "Pipeline.hpp"
@@ -11,7 +12,7 @@
 namespace Stage
 {
 
-    class MEM : public Component::Component
+    class MEM : public Component::Component_t
     {
         private:
             Component::MemoryAccess * Mem = nullptr;
@@ -30,43 +31,46 @@ namespace Stage
 
             HwError Setup() override
             {
-                HwError result = Mem->Setup();
-                return result;
+                return HwError_NoError;
             }
 
             Pipeline_MEMtoWB Perform( Pipeline_EXtoMEM pipe )
             {
-                Pipeline_MEMtoWB result;
-                
-                result.Instruction = pipe.Instruction;
-                result.DoWB = pipe.DoWB;
-                result.Reg = pipe.Reg;
-                result.Val = pipe.Val; // If we do not read, this just carries over from the EX stage.
+                Pipeline_MEMtoWB Result;
+                Result.Reset();
+                Result.CopyFromLast( pipe );
 
                 SetLastHwError( HwError_NoError );
 
-                if( pipe.DoMemRead )
+                if( pipe.MEMParams.DoMemRead )
                 {
-                    static void * DispatchTable[] = { &&Read_Byte, &&Read_HWord, &&Read_Word, &&Read_Dword };
+                    static void * DispatchTable[] = { &&Read_Byte, &&Read_HWord, &&Read_Word, &&Read_DWord };
                     if( Mem == nullptr )
                     {
                         SetLastHwError( HwError_MemoryAccessMissing );
-                        return result;
+                        return Result;
                     }
 
-                    if( pipe.MemSize < 4 )
-                        goto *DispatchTable[pipe.MemSize];
+                    uint64_t Address = pipe.MEMParams.Address;
+                    bool SignExtend = pipe.MEMParams.SignExtend != 0;
+                    uint8_t MemSize = pipe.MEMParams.MemSize;
+
+                    if( MemSize < 4 )
+                        goto *DispatchTable[MemSize];
                     else
                     {
-                        result.Val = 0;
+                        Result.SetWBVal( 1, 0 );
                         SetLastHwError( HwError_Pipeline_InvalidMemSize );
                     }
 
                     Read_Byte:
                     {
-                        bool MemIsGood = Mem->CheckAccessibility( pipe.Address, 1 );
+                        bool MemIsGood = Mem->CheckAccessibility( Address, 1 );
                         if( MemIsGood )
-                            result.Val = (uint64_t) Mem->GetByte( pipe.Address );
+                        {
+                            uint8_t Val = Mem->GetByte( Address );
+                            Result.SetWBVal( 1, ExtendByte( Val, SignExtend ) );
+                        }
                         else
                         {
                             SetLastHwError( HwError_CannotAccessMemory );
@@ -79,9 +83,12 @@ namespace Stage
 
                     Read_HWord:
                     {
-                        bool MemIsGood = Mem->CheckAccessibility( pipe.Address, 2 );
+                        bool MemIsGood = Mem->CheckAccessibility( Address, 2 );
                         if( MemIsGood )
-                            result.Val = (uint64_t) Mem->GetHWord( pipe.Address );
+                        {
+                            uint16_t Val = Mem->GetHWord( Address );
+                            Result.SetWBVal( 1, ExtendHWord( Val, SignExtend ) );
+                        }
                         else
                         {
                             SetLastHwError( HwError_CannotAccessMemory );
@@ -94,9 +101,12 @@ namespace Stage
 
                     Read_Word:
                     {
-                        bool MemIsGood = Mem->CheckAccessibility( pipe.Address, 4 );
+                        bool MemIsGood = Mem->CheckAccessibility( Address, 4 );
                         if( MemIsGood )
-                            result.Val = (uint64_t) Mem->GetWord( pipe.Address );
+                        {
+                            uint32_t Val = Mem->GetWord( Address );
+                            Result.SetWBVal( 1, ExtendWord( Val, SignExtend ) );
+                        }
                         else
                         {
                             SetLastHwError( HwError_CannotAccessMemory );
@@ -109,9 +119,12 @@ namespace Stage
 
                     Read_DWord:
                     {
-                        bool MemIsGood = Mem->CheckAccessibility( pipe.Address, 8 );
+                        bool MemIsGood = Mem->CheckAccessibility( Address, 8 );
                         if( MemIsGood )
-                            result.Val = (uint64_t) Mem->GetDWord( pipe.Address );
+                        {
+                            uint64_t Val = Mem->GetDWord( Address );
+                            Result.SetWBVal( 1, Val );
+                        }
                         else
                         {
                             SetLastHwError( HwError_CannotAccessMemory );
@@ -125,30 +138,33 @@ namespace Stage
 
                 BreakPastRead:
 
-                if( pipe.DoMemWrite )
+                if( pipe.MEMParams.DoMemWrite )
                 {
                     static void * DispatchTable[] = { &&Write_Byte, &&Write_HWord, &&Write_Word, &&Write_DWord };
 
                     if( Mem == nullptr )
                     {
                         SetLastHwError( HwError_MemoryAccessMissing );
-                        return result;
+                        return Result;
                     }
 
-                    if( pipe.MemSize < 4 )
-                        goto *DispatchTable[pipe.MemSize];
+                    uint64_t Address = pipe.MEMParams.Address;
+                    uint8_t MemSize = pipe.MEMParams.MemSize;
+                    uint64_t WriteVal = pipe.MEMParams.WriteVal;
+
+                    if( MemSize < 4 )
+                        goto *DispatchTable[MemSize];
                     else
                     {
-                        result.Val = 0;
                         SetLastHwError( HwError_Pipeline_InvalidMemSize );
                     }
 
                     Write_Byte:
                     {
-                        bool MemIsGood = Mem->CheckAccessibility( pipe.Address, 1 );
+                        bool MemIsGood = Mem->CheckAccessibility( Address, 1 );
 
                         if( MemIsGood )
-                            Mem->SetByte( pipe.Address, (uint8_t) (pipe.WriteVal & 0xff) );
+                            Mem->SetByte( Address, (uint8_t) (WriteVal & 0xff) );
                         else
                         {
                             SetLastHwError( HwError_CannotAccessMemory );
@@ -162,10 +178,10 @@ namespace Stage
 
                     Write_HWord:
                     {
-                        bool MemIsGood = Mem->CheckAccessibility( pipe.Address, 2 );
+                        bool MemIsGood = Mem->CheckAccessibility( Address, 2 );
 
                         if( MemIsGood )
-                            Mem->SetHWord( pipe.Address, (uint16_t) (pipe.WriteVal & 0xffff) );
+                            Mem->SetHWord( Address, (uint16_t) (WriteVal & 0xffff) );
                         else
                         {
                             SetLastHwError( HwError_CannotAccessMemory );
@@ -179,10 +195,10 @@ namespace Stage
 
                     Write_Word:
                     {
-                        bool MemIsGood = Mem->CheckAccessibility( pipe.Address, 4 );
+                        bool MemIsGood = Mem->CheckAccessibility( Address, 4 );
 
                         if( MemIsGood )
-                            Mem->SetWord( pipe.Address, (uint32_t) (pipe.WriteVal & 0xffffffff) );
+                            Mem->SetWord( Address, (uint32_t) (WriteVal & 0xffffffff) );
                         else
                         {
                             SetLastHwError( HwError_CannotAccessMemory );
@@ -196,10 +212,10 @@ namespace Stage
 
                     Write_DWord:
                     {
-                        bool MemIsGood = Mem->CheckAccessibility( pipe.Address, 8 );
+                        bool MemIsGood = Mem->CheckAccessibility( Address, 8 );
 
                         if( MemIsGood )
-                            Mem->SetDWord( pipe.Address, pipe.WriteVal );
+                            Mem->SetDWord( Address, WriteVal );
                         else
                         {
                             SetLastHwError( HwError_CannotAccessMemory );
@@ -215,7 +231,7 @@ namespace Stage
 
                 BreakPastWrite:
 
-                return result;
+                return Result;
             }
 
     };

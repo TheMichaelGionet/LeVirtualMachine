@@ -15,16 +15,8 @@
 namespace Component
 {
 
-    // The way this works is fucky because it should work regardless of the endianness of the host machine.
-    // The faster variant for little endian systems is trivial.
-
-    // WARNING: With the current system, if the index is about to overflow, then it will read/write without setting LastHwError, so it will succeed in spite of it trying to access non-memory indicies.
-    //          A similar thing happens when the index is about to go out of bounds. It will read/write successfully and then display an error.
-    //
-    //          A potential fix is to check to make sure the index is <= Size - SizeOfElement, since this would guarantee that only memory elements can be accessed.
-    //
-    // Update: Added the check to see if the spot in memory is even accessible. This should be called before any access.
-    class MemoryAccess
+    
+    class MemoryAccess : public Component_t
     {
         public:
             
@@ -85,7 +77,7 @@ namespace Component
 
     // Setup() depends on whether this is running on the raw hardware or not.
     // Setup, the constructor and destructor all depend on this.
-    class RawMemoryBase : public Component_t, public MemoryAccess
+    class RawMemoryBase : public MemoryAccess
     {
         protected:
             uint8_t * Memory;

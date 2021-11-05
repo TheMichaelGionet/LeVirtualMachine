@@ -10,7 +10,7 @@
 namespace Stage
 {
 
-    class EX : public Component::Component
+    class EX : public Component::Component_t
     {
         private:
 
@@ -29,64 +29,73 @@ namespace Stage
 
             Component::Component_ID GetID() override
             {
-                return Component_ID_StageEX;
+                return Component::Component_ID_StageEX;
             }
 
             Pipeline_EXtoMEM Perform( Pipeline_IDtoEX pipe )
             {
                 SetLastHwError( HwError_NoError );
 
-                Pipeline_EXtoMEM result;
-                result.Instruction = pipe.Instruction;
+                Pipeline_EXtoMEM Result;
 
-                result.DoMemRead = pipe.DoMemRead;
-                result.DoMemWrite = pipe.DoMemWrite;
-                result.MemSize = pipe.MemSize;
-                result.WriteVal = pipe.WriteVal; 
-
-                result.DoWB = pipe.DoWB;
-                result.Reg = pipe.Reg;
-                result.Val = pipe.Val;
-
-                // Handle PC.
-
-                if( pipe.AddToPC )
-                {
-                    result.PCVal = pipe.PCVal + pipe.Immediate;
-                    result.ReplacePC = 1;
-                }
-                else if( pipe.ReplacePC )
-                {
-                    result.PCVal = pipe.RegVal1 + pipe.Immediate;
-                    result.ReplacePC = 1;
-                }
-                else
-                {
-                    result.PCVal = pipe.PCVal; // Could omit this line since nothing would be done with it.
-                    result.ReplacePC = 0;
-                }
+                Result.CopyFromLast( pipe );
 
                 // Handle ALU
 
-                result.Address = 0;
-                if( pipe.DoALUOp )
+                uint64_t ALUResult = 0;
+
+                Result.SetMemAddress(0);
+                if( pipe.ALUInputs.DoALUOp )
                 {
-                    uint64_t Source2 = ( pipe.UseImmNotReg2 ? pipe.Immediate : pipe.RegVal2 );
-                    uint64_t ALUResult = Alu.DoALUOp( pipe.ALUOp, pipe.RegVal1, Source2, (bool) pipe.InvertALUOp );
-                    if( pipe.ResultType )
+                    uint64_t Source2 = ( pipe.ALUInputs.UseImmNotReg2 ? pipe.ALUInputs.Immediate : pipe.ALUInputs.RegVal2 );
+                    uint64_t Source1 = ( pipe.ALUInputs.UsePCRegister ? pipe.ALUInputs.PCVal : pipe.ALUInputs.RegVal1 );
+                    ALUResult = Alu.DoALUOp( pipe.ALUInputs.ALUOp, Source1, Source2, (bool) pipe.ALUInputs.InvertALUOp );
+
+                    if( pipe.ALUInputs.AddFourToResult )
+                        ALUResult += 4;
+
+                    if( pipe.ALUInputs.ResultType )
                     {
-                        result.Val = ALUResult;
+                        Result.SetWBVal( ALUResult );
                     }
                     else
                     {
-                        result.Address = ALUResult;
+                        Result.SetMemAddress( ALUResult );
                     }
                     SetLastHwError( Alu.LastHwError() );
                 }
 
-                return result;
-            }
+                // Handle PC.
 
+                bool UpdatePC = !pipe.PCCalc.IsConditional;
+
+                if( pipe.PCCalc.IsConditional )
+                {
+                    UpdatePC = ALUResult != 0;
+                    if( pipe.PCCalc.InvertALUOutput )
+                        UpdatePC = !UpdatePC;
+                }
+
+                if( UpdatePC )
+                {
+                    if( pipe.PCCalc.AddToPC )
+                    {
+                        Result.SetPCVal( 1, pipe.PCCalc.PCVal + (pipe.ALUInputs.Immediate << 1) );
+                    }
+                    else if( pipe.PCCalc.ReplacePC )
+                    {
+                        Result.SetPCVal( 1, pipe.ALUInputs.RegVal1 + pipe.ALUInputs.Immediate );
+                    }
+                    else
+                    {
+                        Result.SetPCVal( 0, pipe.ALUInputs.PCVal ); // This can be omitted.
+                    }
+                }
+                else
+                    Result.SetPCVal( 0, pipe.ALUInputs.PCVal );
+
+                return Result;
+            }
 
 
     };

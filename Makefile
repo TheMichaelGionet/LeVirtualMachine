@@ -17,5 +17,5 @@ TestVmStages: TestVmStages.cpp
 	g++ -std=gnu++11 -fpack-struct=1 -o ./debug/TestVmStages TestVmStages.cpp
 
 clean:
-	-rm *.o ./debug/TestVmComponents ./debug/TestVmPipelines ./debug/TestVmControlUnit ./debug/TestVmStages
-	-rmdir debug
+	-rm *.o
+	-rm -r ./debug/

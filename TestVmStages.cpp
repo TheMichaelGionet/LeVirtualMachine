@@ -8,7 +8,9 @@
 
 //#include "StageIF.cpp"
 //#include "StageID.cpp"
-//#include "StageEX.cpp"
+
+#include "ALU.cpp"
+#include "StageEX.cpp"
 
 #include "Memory.cpp"
 #include "StageMEM.cpp"
@@ -51,6 +53,87 @@ void TestID()
 
 void TestEX()
 {
+    Stage::EX leEX;
+
+    printf( "=================================================================\n" );
+    printf( "\nTesting EX\n\n" );
+
+    printf( "Setup Test:\n" );
+
+    HwError leError;
+    leError = leEX.Setup();
+
+    if( leError == HwError_NoError )
+        printf( "Setup successfully.\n" );
+    else
+    {
+        printf( "%s", DecodeHwError( leError ) );
+        return;
+    }
+
+    Stage::Section_Instruction DefaultInstruction = { 0x00 };
+    Stage::Section_WBOp DefaultWBOp = { 0, 0 };
+    Stage::Section_MEMParamsIDtoEX DefaultMEMParams = { 0, 1, 3, 0, 0 };
+    Stage::Section_PCCalc NoPCCalc = { 0, 0, 0, 0, 0 };
+    Stage::Section_ALUInputs NoALUInputs = { 0, 0b000, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xf0070000 };
+
+    // Test No inputs
+    Stage::Pipeline_IDtoEX testPipeline0 = { DefaultInstruction, NoALUInputs, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+
+    // Test Pure ALU stuff
+    Stage::Pipeline_IDtoEX testPipeline1 = { DefaultInstruction, { 1, 0b000, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0ffee, 0xc0de0000 }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline2 = { DefaultInstruction, { 1, 0b000, 0, 1, 0, 0, 0, 0xdead0000, 0xc0ffee, 0xbeef, 0xc0de0000 }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline3 = { DefaultInstruction, { 1, 0b001, 0, 0, 0, 0, 0, 0xc0ffee, 8, 4, 16 }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline4 = { DefaultInstruction, { 1, 0b001, 0, 1, 0, 0, 0, 0xc0ffee, 4, 8, 16 }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline5 = { DefaultInstruction, { 1, 0b000, 1, 0, 0, 0, 0, 0xdeadbeef, 0xbeef, 0xc0ffee, 0xc0debeef }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline6 = { DefaultInstruction, { 1, 0b100, 0, 0, 0, 1, 0, 0xdead, 0xc0de, 0xc0ffee, 0xc0de }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline7 = { DefaultInstruction, { 1, 0b100, 0, 0, 0, 1, 0, 0xdead, 0xc0de, 0xc0ffee, 0xf007 }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline8 = { DefaultInstruction, { 1, 0b000, 0, 0, 0, 0, 1, 0xdead0000, 0xc0de, 0xc0ffee, 0xf0070000 }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline9 = { DefaultInstruction, { 1, 0b000, 1, 0, 0, 0, 1, 0xdead0000, 0xc0de, 0xc0ffee, 0xf0070000 }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline10 = { DefaultInstruction, { 1, 0b000, 0, 0, 1, 0, 0, 0xdead0000, 0xbeef, 0xc0ffee, 0xc0de }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline11 = { DefaultInstruction, { 1, 0b000, 0, 1, 1, 0, 0, 0xdead0000, 0xc0ffee, 0xbeef, 0xc0de }, NoPCCalc, DefaultMEMParams, DefaultWBOp };
+
+    // Test Pure PCCalc stuff
+    Stage::Pipeline_IDtoEX testPipeline12 = { DefaultInstruction, { 0, 0b000, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xf0070000 }, { 1, 0, 0, 0, 0xf0070000 }, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline13 = { DefaultInstruction, { 0, 0b000, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xf0070000 }, { 0, 1, 0, 0, 0xf0070000 }, DefaultMEMParams, DefaultWBOp };
+
+    // Test PCCalc in parallel to ALU:
+    Stage::Pipeline_IDtoEX testPipeline14 = { DefaultInstruction, { 1, 0b000, 0, 0, 1, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xf0070000 }, { 1, 0, 0, 0, 0xf0070000 }, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline15 = { DefaultInstruction, { 1, 0b000, 0, 0, 1, 1, 0, 0xdead0000, 0xbeef, 0xc0de, 0xf0070000 }, { 0, 1, 0, 0, 0xf0070000 }, DefaultMEMParams, DefaultWBOp };
+
+    // Test PCCalc in conjunction to ALU:
+    Stage::Pipeline_IDtoEX testPipeline16 = { DefaultInstruction, { 1, 0b100, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xfee70000 }, { 0, 1, 1, 1, 0xfee70000 }, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline17 = { DefaultInstruction, { 1, 0b100, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xfee70000 }, { 0, 1, 1, 0, 0xfee70000 }, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline18 = { DefaultInstruction, { 1, 0b100, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xfee70000 }, { 1, 0, 1, 1, 0xfee70000 }, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline19 = { DefaultInstruction, { 1, 0b100, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xfee70000 }, { 1, 0, 1, 0, 0xfee70000 }, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline20 = { DefaultInstruction, { 1, 0b010, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xfee70000 }, { 1, 0, 1, 0, 0xfee70000 }, DefaultMEMParams, DefaultWBOp };
+    Stage::Pipeline_IDtoEX testPipeline21 = { DefaultInstruction, { 1, 0b010, 0, 0, 0, 0, 0, 0xdead0000, 0xbeef, 0xc0de, 0xfee70000 }, { 1, 0, 1, 1, 0xfee70000 }, DefaultMEMParams, DefaultWBOp };
+
+    Stage::Pipeline_IDtoEX testPipelines[] = { testPipeline0, testPipeline1, testPipeline2, testPipeline3, testPipeline4, testPipeline5, testPipeline6, testPipeline7, testPipeline8, testPipeline9, testPipeline10, testPipeline11, testPipeline12, testPipeline13, testPipeline14, testPipeline15, testPipeline16, testPipeline17, testPipeline18, testPipeline19, testPipeline20, testPipeline21 };
+
+    uint64_t leLength = sizeof( testPipelines )/sizeof( Stage::Pipeline_IDtoEX );
+
+    uint64_t iterator;
+    for( iterator = 0; iterator < leLength; iterator++ )
+    {
+        printf( "\n\n-----Testing new pipe %ld-----\n\n", iterator );
+
+        Stage::Pipeline_IDtoEX sourcePipeline = testPipelines[iterator];
+
+        PrintPipeIDtoEX( sourcePipeline );
+
+        Stage::Pipeline_EXtoMEM destPipeline = leEX.Perform( sourcePipeline );
+
+        HwError LastHwError = leEX.LastHwError();
+
+        if( LastHwError != HwError_NoError )
+        {
+            printf( "HwError occurred: %s\n", DecodeHwError( LastHwError ) );
+            // keep going
+        }
+
+        PrintPipeEXtoMEM( destPipeline );
+    }
 
 }
 
@@ -227,9 +310,9 @@ int main()
 
     TestEX();
 
-    TestMEM();
+    //TestMEM();
 
-    TestWB();
+    //TestWB();
 
 
     return 0;

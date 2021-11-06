@@ -29,6 +29,17 @@ namespace Stage
                 leMem = newMem;
             }
 
+            IF()
+            {
+                PCReg = 0;
+                leMem = nullptr;
+            }
+
+            void SetMemoryAccess( Component::MemoryAccess * newMem )
+            {
+                leMem = newMem;
+            }
+
             HwError Setup() override
             {
                 HwError result = HwError_NoError;

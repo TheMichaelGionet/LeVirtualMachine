@@ -24,6 +24,13 @@ namespace Stage
                 Mem = mem;
             }
 
+            MEM(){}
+
+            void SetMemoryAccess( Component::MemoryAccess * mem )
+            {
+                Mem = mem;
+            }
+
             Component::Component_ID GetID()
             {
                 return Component::Component_ID_StageMEM;

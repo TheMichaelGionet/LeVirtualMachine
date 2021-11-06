@@ -21,6 +21,13 @@ namespace Stage
                 RegF = regf;
             }
 
+            WB(){}
+
+            void SetRegF( Component::IntegerRegisterFile * regf )
+            {
+                RegF = regf;
+            }
+
             Component::Component_ID GetID()
             {
                 return Component::Component_ID_StageWB;

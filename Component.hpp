@@ -29,6 +29,8 @@ namespace Component
         Component_ID_Power,
         Component_ID_MemoryUnit,
 
+        Component_ID_VirtualMachine,
+
     } Component_ID;
 
 

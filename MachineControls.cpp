@@ -190,6 +190,16 @@ namespace Component
                 SetLastHwError( leMem.LastHwError() );
             }
 
+            MachineMemory(){}
+
+            void SetNewMemorySize( uint64_t mem )
+            {
+                SetLastHwError( HwError_NoError );
+                leMem.SetNewMemorySize( mem );
+                MemSize = mem;
+                SetLastHwError( leMem.LastHwError() );
+            }
+
             HwError Setup() override
             {
                 return leMem.Setup();

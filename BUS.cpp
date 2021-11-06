@@ -6,18 +6,13 @@
 #include "Component.hpp"
 #include "Memory.cpp"
 
-// NOTICE: ON HOLD until the processor is finished. The core is more important right now than the rest of the VM. 
-// USE RAW MEMORY for now in the first version.
-
-// Update: No! I'm using memory mapped IO for the console and machine controls.
-
 namespace Component
 {
     const uint64_t MaxNumPeripherals = 256;
 
-    class Peripheral : public MemoryAccess, public Component_t
+    class Peripheral : public MemoryAccess
     {
-        private:
+        protected:
             uint64_t startLocation;
             uint64_t lengthLocation;
 
@@ -44,17 +39,9 @@ namespace Component
                 lengthLocation = length;
             }
 
-            
+    };
 
-            
-
-        
-
-            
-
-    }
-
-    class BUS : public Component_t, public MemoryAccess
+    class BUS : public MemoryAccess
     {
         private:
             Peripheral * lePeripherals[MaxNumPeripherals];
@@ -70,9 +57,72 @@ namespace Component
 
         public:
 
-            HwError AddPeripheral( Peripheral * newPeripheral,  )
+            BUS()
             {
-                
+                ZeroPeripherals();
+            }
+
+            Component_ID GetID() override
+            {
+                return Component_ID_Bus;
+            }
+
+            void AddPeripheral( Peripheral * newPeripheral, uint64_t slot )
+            {
+                this->SetLastHwError( HwError_NoError );
+                if( slot < MaxNumPeripherals )
+                    lePeripherals[slot] = newPeripheral;
+                else
+                    this->SetLastHwError( HwError_PeripheralOutOfRange );
+            }
+
+            uint8_t GetByte( uint64_t index ) override
+            {
+                this->SetLastHwError( HwError_NoError );
+
+                uint64_t iterator;
+                for( iterator = 0; iterator < MaxNumPeripherals; iterator++ )
+                {
+                    if( (lePeripherals[iterator] != NULL) && (lePeripherals[iterator]->CheckAccessibility( index, sizeof(uint8_t) ) ) )
+                    {
+                        uint8_t result = lePeripherals[iterator]->GetByte(index);
+                        this->SetLastHwError( lePeripherals[iterator]->LastHwError() );
+                        return result;
+                    }
+                }
+
+                return 0;
+            }
+
+            void SetByte( uint64_t index, uint8_t val ) override
+            {
+                this->SetLastHwError( HwError_NoError );
+
+                uint64_t iterator;
+                for( iterator = 0; iterator < MaxNumPeripherals; iterator++ )
+                {
+                    if( lePeripherals[iterator] != NULL )
+                    if( lePeripherals[iterator]->CheckAccessibility( index, sizeof(uint8_t) ) )
+                    {
+                        lePeripherals[iterator]->SetByte( index, val );
+                        this->SetLastHwError( lePeripherals[iterator]->LastHwError() );
+                    }
+                }
+            }
+
+            // In this case, accessibility requires that the whole space is owned by a single peripheral.
+            bool CheckAccessibility( uint64_t index, uint64_t size ) override
+            {
+                this->SetLastHwError( HwError_NoError );
+
+                uint64_t iterator;
+                for( iterator = 0; iterator < MaxNumPeripherals; iterator++ )
+                {
+                    if( (lePeripherals[iterator] != NULL) && (lePeripherals[iterator]->CheckAccessibility( index, size ) ) )
+                        return true;
+                }
+
+                return false;
             }
 
     };

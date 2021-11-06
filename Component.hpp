@@ -25,6 +25,10 @@ namespace Component
         Component_ID_StageMEM,
         Component_ID_StageWB,
 
+        Component_ID_Printer,
+        Component_ID_Power,
+        Component_ID_MemoryUnit,
+
     } Component_ID;
 
 

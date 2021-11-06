@@ -47,22 +47,22 @@ namespace Component
             {
                 uint16_t bottomHalf = val & 0xff;
                 uint16_t upperHalf = (val >> 8) & 0xff;
-                SetByte( index, (uint8_t) bottomHalf );
                 SetByte( index + 1, (uint8_t) upperHalf );
+                SetByte( index, (uint8_t) bottomHalf );
             }
             void SetWord( uint64_t index, uint32_t val )
             {
                 uint32_t bottomHalf = val & 0xffff;
                 uint32_t upperHalf = (val >> 16) & 0xffff;
-                SetHWord( index, (uint16_t) bottomHalf );
                 SetHWord( index + 2, (uint16_t) upperHalf );
+                SetHWord( index, (uint16_t) bottomHalf );
             }
             void SetDWord( uint64_t index, uint64_t val )
             {
                 uint64_t bottomHalf = val & 0xffffffff;
                 uint64_t upperHalf = (val >> 32) & 0xffffffff;
-                SetWord( index, (uint32_t) bottomHalf );
                 SetWord( index + 4, (uint32_t) upperHalf );
+                SetWord( index, (uint32_t) bottomHalf );
             }
     };
 
@@ -135,6 +135,17 @@ namespace Component
                 // Done this way so that allocations happen on the setup instead of on the construction.
                 this->Memory = nullptr;
                 this->MemorySize = 0;
+            }
+
+            RawMemoryOnOS()
+            {
+                this->Memory = nullptr;
+                this->MemorySize = 0;
+            }
+
+            void SetNewMemorySize( uint64_t newMemorySize )
+            {
+                _newMemorySize = newMemorySize;
             }
 
             HwError Setup() override

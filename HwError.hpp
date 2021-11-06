@@ -22,6 +22,10 @@ typedef enum
 
     HwError_BadOpcodeExtension,
     HwError_UnknownInstruction,
+
+    HwError_PeripheralOutOfRange,
+    HwError_UnknownAddress,
+    HwError_UnknownOption,
 } HwError;
 
 const char * DecodeHwError( HwError E )
@@ -41,6 +45,9 @@ const char * DecodeHwError( HwError E )
         case HwError_CannotAccessMemory: return "Cannot access memory.";
         case HwError_BadOpcodeExtension: return "Bad opcode extension.";
         case HwError_UnknownInstruction: return "Unknown instruction.";
+        case HwError_PeripheralOutOfRange: return "Trying to add a peripheral, but the index given is out of range.";
+        case HwError_UnknownAddress: return "Tried to access an address that is not mapped to memory.";
+        case HwError_UnknownOption: return "A bad option was input for a system method.";
 
         default: return "Error code not known.";
     }

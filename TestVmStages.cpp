@@ -6,7 +6,9 @@
 #include "Pipeline.hpp"
 #include "DebugPrint.hpp"
 
-//#include "StageIF.cpp"
+#include "Memory.cpp"
+#include "ControlUnit.cpp"
+#include "StageIF.cpp"
 
 #include "InstructionType.hpp"
 #include "RegisterFile.cpp"
@@ -16,7 +18,6 @@
 #include "ALU.cpp"
 #include "StageEX.cpp"
 
-#include "Memory.cpp"
 #include "StageMEM.cpp"
 
 #include "RegisterFile.cpp"
@@ -50,6 +51,155 @@ void TestIF()
 
     printf( "=================================================================\n" );
     printf( "\nTesting IF\n\n" );
+
+    const uint64_t MaxMemSize = 0xfffff + 1;
+
+    Component::RawMemoryOnOS leMem( MaxMemSize );
+
+    printf( "Setting up raw memory on OS.\n" );
+
+    HwError Result = leMem.Setup();
+
+    if( Result != HwError_NoError )
+    {
+        printf( "Error setting up memory: %s\n", DecodeHwError( Result ) );
+        return;
+    }
+
+    printf( "Setting up the IF stage.\n" );
+
+    Stage::IF leIF( &leMem );
+
+    Result = leIF.Setup();
+
+    if( Result != HwError_NoError )
+    {
+        printf( "Error setting up IF stage: %s\n", DecodeHwError( Result ) );
+        return;
+    }
+
+    uint32_t DummyProgram[] = { 
+        0x07000137,
+        0x00410113,
+        0x00000293,
+        0x0300006F,
+        0xFE512E23,
+        0x00028633,
+        0x034000EF,
+        0x000505B3,
+        0x00100513,
+        0x00000073,
+        0x00B00513,
+        0x00A00593,
+        0x00000073,
+        0xFFC12283,
+        0x00128293,
+        0x06400313,
+        0xFC62E8E3,
+        0x00A00513,
+        0x00000073,
+        0x01010113,
+        0xFE112E23,
+        0x00200293,
+        0x02566663,
+        0xFEC12C23,
+        0xFFF60613,
+        0x04C000E7,
+        0xFEA12A23,
+        0xFF812603,
+        0xFFE60613,
+        0x04C000E7,
+        0xFF412283,
+        0x00A28533,
+        0x0080006F,
+        0x00100513,
+        0xFFC12083,
+        0xFF010113,
+        0x00008067 };
+
+    const char * ASMDummyProgram[] = { 
+        "lui x2, 0x7000",
+        "addi x2, x2, 4",
+        "addi x5, x0, 0",
+        "jal x0, Main_For_TestCond",
+        "Main_For_Code: sw x5, -4, x2",
+        "add x12, x5, x0",
+        "jal x1, Proc_Fibb",
+        "add x11, x10, x0",
+        "addi x10, x0, 1",
+        "ecall",
+        "addi x10, x0, 11",
+        "addi x11, x0, '\\n'",
+        "ecall",
+        "lw x5, -4, x2",
+        "Main_For_Iteration: addi x5, x5, 1",
+        "Main_For_TestCond: addi x6, x0, 100",
+        "bltu x5, x6, Main_For_Code",
+        "Main_For_End: Main_Return: addi x10, x0, 10",
+        "ecall",
+        "Proc_Fibb: addi x2, x2, 16",
+        "sw x1, -4, x2",
+        "addi x5, x0, 2",
+        "bltu x12, x5, Proc_Fibb_Else",
+        "Proc_Fibb_If: sw x12, -8, x2",
+        "addi x12, x12, -1",
+        "jalr x1, x0, Proc_Fibb",
+        "sw x10, -12, x2",
+        "lw x12, -8, x2",
+        "addi x12, x12, -2",
+        "jalr x1, x0, Proc_Fibb",
+        "lw x5, -12, x2",
+        "add x10, x5, x10",
+        "jal x0, Proc_Fibb_Return",
+        "Proc_Fibb_Else: addi x10, x0, 1",
+        "Proc_Fibb_EndIf: Proc_Fibb_Return: lw x1, -4, x2",
+        "addi x2, x2, -16",
+        "jalr x0, x1, 0"
+    };
+
+    uint64_t DummyProgramLength = sizeof( DummyProgram ) / sizeof(uint32_t);
+
+    uint64_t DummyProgramTextLength = sizeof( ASMDummyProgram ) / sizeof(char*);
+
+    if( DummyProgramLength != DummyProgramTextLength )
+    {
+        printf( "Programmer may have set things up incorrectly, Dummy Program Length = %ld and Dummy Program Text Length = %ld.\n", DummyProgramLength, DummyProgramTextLength );
+        return;
+    }
+
+    uint64_t iterator;
+    for( iterator = 0; iterator < DummyProgramLength; iterator++ )
+    {
+        leMem.SetWord( 4*iterator, DummyProgram[iterator] );
+        Result = leMem.LastHwError();
+
+        printf( "Set instruction[%ld] to %x\n", iterator, leMem.GetWord( iterator ) );
+
+        if( Result != HwError_NoError )
+        {
+            printf( "Error: %s\n", DecodeHwError( Result ) );
+            return;
+        }
+    }
+    
+
+    for( iterator = 0; iterator < DummyProgramLength; iterator++ )
+    {
+        printf( "\n------------------------------------------------\n" );
+        printf( "Turning instruction \"%s\" into control signals.\n", ASMDummyProgram[iterator] );
+
+        Stage::Pipeline_IFtoID destPipeline = leIF.Perform( false, 0 );
+
+        Result = leIF.LastHwError();
+
+        if( Result != HwError_NoError )
+        {
+            printf( "An error occurred: %s\n", DecodeHwError( Result ) );
+            // keep going
+        }
+
+        PrintPipeIFtoID( destPipeline );
+    }
 
 }
 
@@ -416,11 +566,11 @@ int main()
 
     TestID();
 
-    //TestEX();
+    TestEX();
 
-    //TestMEM();
+    TestMEM();
 
-    //TestWB();
+    TestWB();
 
 
     return 0;

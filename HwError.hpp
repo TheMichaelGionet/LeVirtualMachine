@@ -35,6 +35,12 @@ const char * DecodeHwError( HwError E )
         case HwError_MemoryIndexOutOfRange: return "The Index given is larger than any memory location index.";
         case HwError_CannotAllocateSpace: return "Cannot allocate the specified amount of space for the raw memory.";
         case HwError_UnknownInstructionType: return "An Unknown instruction type is attempting to be parsed. ";
+        case HwError_RegisterFileMissing: return "Register File is missing.";
+        case HwError_MemoryAccessMissing: return "Memory Access is missing.";
+        case HwError_Pipeline_InvalidMemSize: return "Invalid mem size.";
+        case HwError_CannotAccessMemory: return "Cannot access memory.";
+        case HwError_BadOpcodeExtension: return "Bad opcode extension.";
+        case HwError_UnknownInstruction: return "Unknown instruction.";
 
         default: return "Error code not known.";
     }

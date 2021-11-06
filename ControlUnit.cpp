@@ -139,6 +139,8 @@ namespace Component
 
                 if( stdop < 32 )
                     goto *StdOpDispatch[stdop];
+                else
+                    goto Unknown;
 
                 Load:
                 {

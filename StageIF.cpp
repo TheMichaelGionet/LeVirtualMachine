@@ -61,7 +61,7 @@ namespace Stage
                 if( DoReplacePC )
                     PCReg = NewVal;
 
-                uint32_t NextInstruction = leMem->GetWord( PCReg );;
+                uint32_t NextInstruction = leMem->GetWord( PCReg );
 
                 Stage::Pipeline_IFtoID result = leControl.Perform( NextInstruction, PCReg );
 

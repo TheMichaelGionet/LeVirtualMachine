@@ -27,6 +27,9 @@
 class VirtualMachine : public Component::Component_t
 {
     private:
+
+        Instruction::InstructionParser Parser;
+
         Stage::IF IF;
         Stage::ID ID;
         Stage::EX EX;
@@ -40,10 +43,10 @@ class VirtualMachine : public Component::Component_t
         Component::BUS BUS;
 
         const uint64_t MemBaseAddress = 0;
-        const uint64_t MemSize = 0x100000000;
-        const uint64_t PrinterBaseAddress = 0x100000000;
+        const uint64_t MemSize = 0x1000000;
+        const uint64_t PrinterBaseAddress = 0x1000000;
         const uint64_t PrinterSize = 0x12;
-        const uint64_t PowerBaseAddress = 0x100000020;
+        const uint64_t PowerBaseAddress = 0x1000020;
         const uint64_t PowerSize = 0x1;
 
     public:
@@ -118,6 +121,11 @@ class VirtualMachine : public Component::Component_t
             return &BUS;
         }
 
+        Component::IntegerRegisterFile * RegF()
+        {
+            return ID.GetRegFForWB();
+        }
+
         uint64_t GetPCVal()
         {
             return IF.GetPCReg();
@@ -126,6 +134,73 @@ class VirtualMachine : public Component::Component_t
         void SetPCVal( uint64_t val )
         {
             IF.ReplacePC( val );
+        }
+
+        // return whether or not to keep going.
+        bool PerformExecutionRound()
+        {
+
+            HwError result = HwError_NoError;
+
+            Stage::Pipeline_IFtoID IFtoID = IF.Perform( 0, 0 );
+
+            result = IF.LastHwError();
+            if( result != HwError_NoError )
+            {
+                SetLastHwError( result );
+                return false;
+            }
+
+            Instruction::ParsedInstruction lInstruction = Parser.ParseInstruction( IFtoID.Instruction.Instruction );
+            Stage::Pipeline_IDtoEX IDtoEX = ID.Perform( IFtoID, lInstruction );
+
+            result = ID.LastHwError();
+            if( result != HwError_NoError )
+            {
+                SetLastHwError( result );
+                return false;
+            }
+
+            Stage::Pipeline_EXtoMEM EXtoMEM = EX.Perform( IDtoEX );
+
+            result = EX.LastHwError();
+            if( result != HwError_NoError )
+            {
+                SetLastHwError( result );
+                return false;
+            }
+
+            Stage::Pipeline_MEMtoWB MEMtoWB = MEM.Perform( EXtoMEM );
+
+            result = MEM.LastHwError();
+            if( result != HwError_NoError )
+            {
+                SetLastHwError( result );
+                return false;
+            }
+
+            WB.Perform( MEMtoWB );
+
+            result = WB.LastHwError();
+            if( result != HwError_NoError )
+            {
+                SetLastHwError( result );
+                return false;
+            }
+
+
+            if( EXtoMEM.PCResult.ReplacePC )
+            {
+                uint64_t NewPCVal = EXtoMEM.PCResult.PCVal;
+                IF.ReplacePC( NewPCVal );
+            }
+
+            return (bool)Power.state;
+        }
+
+        void Perform()
+        {
+            while( PerformExecutionRound() );
         }
 };
 

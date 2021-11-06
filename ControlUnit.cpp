@@ -33,7 +33,7 @@ namespace Component
 
                 // 0b0000011 = LOAD
                 DefaultValues[ 0b0000011 ].Instruction = {0x00};
-                DefaultValues[ 0b0000011 ].IDParams = {1, 0b01, 0x00, 0};
+                DefaultValues[ 0b0000011 ].IDParams = {1, 1, 0b01, 0x00, 0};
                 DefaultValues[ 0b0000011 ].ALUOp = {1, 0b000, 0, 1, 0, 0, 0};
                 DefaultValues[ 0b0000011 ].PCCalc = {0, 0, 0, 0, 0x00};
                 DefaultValues[ 0b0000011 ].MEMParamsIFtoID = {1, 0, 0x00, 0x00 };
@@ -41,7 +41,7 @@ namespace Component
 
                 // 0b0010011 = ALU with IMM value
                 DefaultValues[ 0b0010011 ].Instruction = {0x00};
-                DefaultValues[ 0b0010011 ].IDParams = {1, 0b01, 0x00, 0};
+                DefaultValues[ 0b0010011 ].IDParams = {1, 1, 0b01, 0x00, 0};
                 DefaultValues[ 0b0010011 ].ALUOp = {1, 0x00, 0, 1, 1, 0, 0};
                 DefaultValues[ 0b0010011 ].PCCalc = {0, 0, 0, 0, 0x00};
                 DefaultValues[ 0b0010011 ].MEMParamsIFtoID = {0, 0, 0, 0 };
@@ -49,7 +49,7 @@ namespace Component
 
                 // 0b0010111 = AUIPC
                 DefaultValues[ 0b0010111 ].Instruction = {0x00};
-                DefaultValues[ 0b0010111 ].IDParams = {1, 0b00, 0, 0};
+                DefaultValues[ 0b0010111 ].IDParams = {1, 1, 0b00, 0, 0};
                 DefaultValues[ 0b0010111 ].ALUOp = {1, 0b000, 0, 1, 1, 1, 0};
                 DefaultValues[ 0b0010111 ].PCCalc = {0, 0, 0, 0, 0x00};
                 DefaultValues[ 0b0010111 ].MEMParamsIFtoID = {0, 0, 0, 0 };
@@ -59,7 +59,7 @@ namespace Component
 
                 // 0b0100011 = STORE
                 DefaultValues[ 0b0100011 ].Instruction = {0x00};
-                DefaultValues[ 0b0100011 ].IDParams = {1, 0b11, 0x00, 0x00};
+                DefaultValues[ 0b0100011 ].IDParams = {1, 1, 0b11, 0x00, 0x00};
                 DefaultValues[ 0b0100011 ].ALUOp = {1, 0b000, 0, 1, 0, 0, 0};
                 DefaultValues[ 0b0100011 ].PCCalc = {0, 0, 0, 0, 0x00};
                 DefaultValues[ 0b0100011 ].MEMParamsIFtoID = {0, 1, 0x00, 0 };
@@ -67,7 +67,7 @@ namespace Component
 
                 // 0b0110011 = ALU with Reg value
                 DefaultValues[ 0b0110011 ].Instruction = {0x00};
-                DefaultValues[ 0b0110011 ].IDParams = {0, 0b11, 0x00, 0x00};
+                DefaultValues[ 0b0110011 ].IDParams = {0, 1, 0b11, 0x00, 0x00};
                 DefaultValues[ 0b0110011 ].ALUOp = {1, 0x00, 0x00, 0, 1, 0, 0};
                 DefaultValues[ 0b0110011 ].PCCalc = {0, 0, 0, 0, 0x00};
                 DefaultValues[ 0b0110011 ].MEMParamsIFtoID = {0, 0, 0, 0 };
@@ -75,7 +75,7 @@ namespace Component
 
                 // 0b0110111 = LUI
                 DefaultValues[ 0b0110111 ].Instruction = {0x00};
-                DefaultValues[ 0b0110111 ].IDParams = {1, 0b00, 0, 0};
+                DefaultValues[ 0b0110111 ].IDParams = {1, 1, 0b00, 0, 0};
                 DefaultValues[ 0b0110111 ].ALUOp = {0, 0, 0, 0, 0, 0, 0};
                 DefaultValues[ 0b0110111 ].PCCalc = {0, 0, 0, 0, 0x00};
                 DefaultValues[ 0b0110111 ].MEMParamsIFtoID = {0, 0, 0, 0};
@@ -85,7 +85,7 @@ namespace Component
 
                 // 0b1100011 = Branch
                 DefaultValues[ 0b1100011 ].Instruction = {0x00};
-                DefaultValues[ 0b1100011 ].IDParams = {1, 0b11, 0x00, 0x00};
+                DefaultValues[ 0b1100011 ].IDParams = {1, 1, 0b11, 0x00, 0x00};
                 DefaultValues[ 0b1100011 ].ALUOp = {1, 0x00, 0, 1, 1, 0, 0};
                 DefaultValues[ 0b1100011 ].PCCalc = {1, 0, 1, 0x00, 0x00};
                 DefaultValues[ 0b1100011 ].MEMParamsIFtoID = {0, 0, 0, 0};
@@ -93,7 +93,7 @@ namespace Component
 
                 // 0b1100011 = JALR
                 DefaultValues[ 0b1100111 ].Instruction = {0x00};
-                DefaultValues[ 0b1100111 ].IDParams = {1, 0b01, 0x00, 0};
+                DefaultValues[ 0b1100111 ].IDParams = {1, 1, 0b01, 0x00, 0};
                 DefaultValues[ 0b1100111 ].ALUOp = {1, 0b000, 0, 1, 1, 1, 1};
                 DefaultValues[ 0b1100111 ].PCCalc = {0, 1, 0, 0, 0x00};
                 DefaultValues[ 0b1100111 ].MEMParamsIFtoID = {0, 0, 0, 0};
@@ -101,7 +101,7 @@ namespace Component
 
                 // 0b1101111 = JAL
                 DefaultValues[ 0b1101111 ].Instruction = {0x00};
-                DefaultValues[ 0b1101111 ].IDParams = {1, 0b00, 0, 0};
+                DefaultValues[ 0b1101111 ].IDParams = {1, 1, 0b00, 0, 0};
                 DefaultValues[ 0b1101111 ].ALUOp = {1, 0b000, 0, 1, 1, 1, 1};
                 DefaultValues[ 0b1101111 ].PCCalc = {1, 0, 0, 0, 0x00};
                 DefaultValues[ 0b1101111 ].MEMParamsIFtoID = {0, 0, 0, 0};

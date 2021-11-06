@@ -7,7 +7,11 @@
 #include "DebugPrint.hpp"
 
 //#include "StageIF.cpp"
-//#include "StageID.cpp"
+
+#include "InstructionType.hpp"
+#include "RegisterFile.cpp"
+#include "ConstantGenerator.hpp"
+#include "StageID.cpp"
 
 #include "ALU.cpp"
 #include "StageEX.cpp"
@@ -44,10 +48,114 @@ void PrintRegisterFile( Component::IntegerRegisterFile * RegF )
 void TestIF()
 {
 
+    printf( "=================================================================\n" );
+    printf( "\nTesting IF\n\n" );
+
 }
 
 void TestID()
 {
+    printf( "=================================================================\n" );
+    printf( "\nTesting ID\n\n" );
+
+    Instruction::InstructionParser leParser;
+
+    Stage::ID leID;
+
+    HwError leError;
+    leError = leID.Setup();
+
+    if( leError == HwError_NoError )
+        printf( "Setup successfully.\n" );
+    else
+    {
+        printf( "%s", DecodeHwError( leError ) );
+        return;
+    }
+
+    Component::IntegerRegisterFile * RegF = leID.GetRegFForWB();
+
+    uint64_t iterator;
+    for( iterator = 0; iterator < 32; iterator++ )
+    {
+        RegF->SetVal( iterator, (7*iterator) % 32 );
+        printf( "Set Reg[%ld] = %lx\n", iterator, RegF->GetVal( iterator ) );
+    }
+
+    Stage::Section_Instruction DefaultInstruction = { 0x00 };
+    Stage::Section_ALUOp DefaultALUOp = { 1, 0b000, 1, 0, 1, 0, 0 };
+    Stage::Section_PCCalc DefaultPCCalc = { 1, 0, 0, 0, 0xdeadc0de };
+    Stage::Section_MEMParamsIFtoID DefaultMEMParamsIFtoID = { 0, 0, 0, 0 };
+    Stage::Section_WBOp DefaultWBOp = { 1, 4 };
+
+    /*
+    uint8_t DoGenConst : 1;
+    uint8_t SignExtend : 1; // sign extend the generated constant
+    uint8_t ReadRegisters : 2; // 00 - no read, 01 - read reg1, 10 - read reg2, 11 - read both.
+    uint8_t ReadReg1 : 5;
+    uint8_t ReadReg2 : 5;
+    */
+
+    //  1 0x003100B3  add x1 x2 x3
+    //  2 0x00128213  addi x4 x5 1
+    //  3 0xFFF38313  addi x6 x7 -1
+    //  4 0x7E638FA3  sb x6 2047(x7)
+    //  5 0xFE638FA3  sb x6 -1(x7)
+    //  6 0xFE7346E3  blt x6 x7 -20
+    //  7 0x00734A63  blt x6 x7 20
+    //  8 0xFFFFF417  auipc x8 0xfffff
+    //  9 0x7FFFF417  auipc x9 0x7ffff
+    // 10 0xFDDFF26F  jal x4 -36
+    // 11 0x0040026F  jal x4 4
+
+    Stage::Pipeline_IFtoID testPipeline1 = { { 0x003100B3 }, { 0, 0, 0b11, 2, 3 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline2 = { { 0x00128213 }, { 1, 1, 0b01, 5, 0 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline3 = { { 0xFFF38313 }, { 1, 1, 0b01, 7, 0 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline4 = { { 0x7E638FA3 }, { 1, 1, 0b11, 6, 7 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline5 = { { 0xFE638FA3 }, { 1, 1, 0b11, 6, 7 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline6 = { { 0xFE7346E3 }, { 1, 1, 0b11, 6, 7 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline7 = { { 0x00734A63 }, { 1, 1, 0b11, 6, 7 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline8 = { { 0xFFFFF417 }, { 1, 1, 0b00, 0, 0 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline9 = { { 0x7FFFF417 }, { 1, 1, 0b00, 0, 0 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline10 = { { 0xFDDFF26F }, { 1, 1, 0b11, 0, 0 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+    Stage::Pipeline_IFtoID testPipeline11 = { { 0x0040026F }, { 1, 1, 0b11, 0, 0 }, DefaultALUOp, DefaultPCCalc, DefaultMEMParamsIFtoID, DefaultWBOp };
+
+    Stage::Pipeline_IFtoID testPipelines[] = { testPipeline1, testPipeline2, testPipeline3, testPipeline4, testPipeline5, testPipeline6, testPipeline7, testPipeline8, testPipeline9, testPipeline10, testPipeline11 };
+    
+    uint64_t leLength = sizeof( testPipelines ) / sizeof( Stage::Pipeline_IFtoID );
+
+    for( iterator = 0; iterator < leLength; iterator++ )
+    {
+        printf( "\n\n-----Testing new pipe %ld-----\n\n", iterator );
+
+        Stage::Pipeline_IFtoID sourcePipeline = testPipelines[iterator];
+
+        PrintPipeIFtoID( sourcePipeline );
+
+        Instruction::ParsedInstruction leInstruction = leParser.ParseInstruction( sourcePipeline.Instruction.Instruction );
+
+        leError = leParser.GetLastHwError();
+
+        if( leError != HwError_NoError )
+        {
+            printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" );
+            printf( "\nInstruction Parsing Error: %s\n", DecodeHwError( leError ) );
+            continue;
+        }
+
+        Stage::Pipeline_IDtoEX destPipeline = leID.Perform( sourcePipeline, leInstruction );
+
+        leError = leID.LastHwError();
+
+        if( leError != HwError_NoError )
+        {
+            printf( "HwError Occurred: %s\n", DecodeHwError( leError ) );
+            // do not return or "continue"
+        }
+
+        PrintPipeIDtoEX( destPipeline );
+
+    }
 
 }
 
@@ -308,7 +416,7 @@ int main()
 
     TestID();
 
-    TestEX();
+    //TestEX();
 
     //TestMEM();
 

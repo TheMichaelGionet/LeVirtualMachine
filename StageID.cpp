@@ -12,7 +12,7 @@
 namespace Stage
 {
 
-    class ID : public Component::Component
+    class ID : public Component::Component_t
     {
         private:
     
@@ -44,70 +44,66 @@ namespace Stage
 
                 // Copy over the unused stuff;
 
-                result.Instruction = pipe.Instruction;
+                result.CopyFromLast( pipe );
 
-                result.DoALUOp = pipe.DoALUOp;
-                result.ALUOp = pipe.ALUOp;
-                result.InvertALUOp = pipe.InvertALUOp;
-                result.UseImmNotReg2 = pipe.UseImmNotReg2;
-                result.ResultType = pipe.ResultType;
-
-                result.AddToPC = pipe.AddToPC;
-                result.ReplacePC = pipe.ReplacePC;
-                result.PCVal = pipe.PCVal;
-
-                result.DoMemRead = pipe.DoMemRead;
-                result.DoMemWrite = pipe.DoMemWrite;
-                result.MemSize = pipe.MemSize;
-                
-                result.DoWB = pipe.DoWB;
-                result.Reg = pipe.Reg;
+                uint64_t leConst = 0;
+                uint64_t RegVal1 = 0;
+                uint64_t RegVal2 = 0;
+                uint64_t PCVal = pipe.PCCalc.PCVal;
 
                 // Generate constant
 
-                uint64_t leConst = Gen.GenerateConst( instr );
-                result.Immediate = leConst;
+                if( pipe.IDParams.DoGenConst )
+                    leConst = Gen.GenerateConst( instr, pipe.IDParams.SignExtend );
 
                 SetLastHwError( Gen.LastHwError() );
                 if( LastHwError() != HwError_NoError )
                 {
-                    result.RegVal1 = 0;
-                    result.RegVal2 = 0;
-                    result.WriteVal = 0;
+                    result.SetALUInputs( RegVal1, RegVal2, leConst, PCVal );
+                    result.SetMemParam( RegVal2 );
 
                     return result;
                 }
 
                 // Read Registers
 
-                if( pipe.ReadRegisters & 0b01 )
+                if( pipe.IDParams.ReadRegisters & 0b01 )
                 {
-                    result.RegVal1 = RegF.GetVal( pipe.ReadReg1 );
+                    RegVal1 = RegF.GetVal( pipe.IDParams.ReadReg1 );
                     SetLastHwError( RegF.LastHwError() );
                     if( LastHwError() != HwError_NoError )
                     {
-                        result.RegVal2 = 0;
-                        result.WriteVal = 0;
-
+                        result.SetALUInputs( RegVal1, RegVal2, leConst, PCVal );
+                        result.SetMemParam( RegVal2 );
                         return result;
                     }
                 }
                 else
-                    result.RegVal1 = 0;
+                    RegVal1 = 0;
 
-                if( pipe.ReadRegisters & 0b10 )
+                if( pipe.IDParams.ReadRegisters & 0b10 )
                 {
-                    uint64_t RegVal2 = RegF.GetVal( pipe.ReadReg2 );
-                    result.RegVal2 = RegVal2;
-                    result.WriteVal = RegVal2;
+                    RegVal2 = RegF.GetVal( pipe.IDParams.ReadReg2 );
                     SetLastHwError( RegF.LastHwError() );
                     if( LastHwError() != HwError_NoError )
+                    {
+                        result.SetALUInputs( RegVal1, RegVal2, leConst, PCVal );
+                        result.SetMemParam( RegVal2 );
                         return result;
+                    }
                 }
+
+                result.SetALUInputs( RegVal1, RegVal2, leConst, PCVal );
+                result.SetMemParam( RegVal2 );
 
                 return result;
             }
-    
+
+
+        Component::IntegerRegisterFile * GetRegFForWB()
+        {
+            return &RegF;
+        }
     
     };
 

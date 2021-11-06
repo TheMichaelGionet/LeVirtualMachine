@@ -370,6 +370,7 @@ namespace Stage
         public:
 
         uint8_t DoGenConst : 1;
+        uint8_t SignExtend : 1; // sign extend the generated constant
         uint8_t ReadRegisters : 2; // 00 - no read, 01 - read reg1, 10 - read reg2, 11 - read both.
         uint8_t ReadReg1 : 5;
         uint8_t ReadReg2 : 5;
@@ -377,6 +378,7 @@ namespace Stage
         void Copy( Section_IDParams copy )
         {
             DoGenConst = copy.DoGenConst;
+            SignExtend = copy.SignExtend;
             ReadRegisters = copy.ReadRegisters;
             ReadReg1 = copy.ReadReg1;
             ReadReg2 = copy.ReadReg2;
@@ -385,6 +387,7 @@ namespace Stage
         void Reset()
         {
             DoGenConst = 0;
+            SignExtend = 0;
             ReadRegisters = 0;
             ReadReg1 = 0;
             ReadReg2 = 0;

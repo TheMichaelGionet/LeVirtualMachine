@@ -6,11 +6,12 @@
 #include "Component.hpp"
 #include "InstructionType.hpp"
 #include "Pipeline.hpp"
+#include "ControlUnit.hpp"
 
 namespace Stage
 {
 
-    class IF : public Component::Component
+    class IF : public Component::Component_t
     {
         private:
 

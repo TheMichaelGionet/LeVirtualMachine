@@ -54,7 +54,7 @@ void PrintSectionALUInputs( Stage::Section_ALUInputs leSection )
 
 void PrintSectionIDParams( Stage::Section_IDParams leSection )
 {
-    printf( "IDParams: DoGenConst = %d, ReadRegisters = %x, ReadReg1 = %x, ReadReg2 = %x\n", (int) leSection.DoGenConst, (int) leSection.ReadRegisters, (int) leSection.ReadReg1, (int) leSection.ReadReg2 );
+    printf( "IDParams: DoGenConst = %d, SignExtend = %d, ReadRegisters = %x, ReadReg1 = %x, ReadReg2 = %x\n", (int) leSection.DoGenConst, (int) leSection.SignExtend, (int) leSection.ReadRegisters, (int) leSection.ReadReg1, (int) leSection.ReadReg2 );
 }
 
 void PrintSectionALUOp( Stage::Section_ALUOp leSection )

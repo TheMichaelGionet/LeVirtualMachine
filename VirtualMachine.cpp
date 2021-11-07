@@ -1,6 +1,8 @@
 #ifndef VM_VirtualMachine
 #define VM_VirtualMachine
 
+// This file defines the virtual machine object.
+
 #ifndef MODE
 #define Mode_Release 1
 #define Mode_Debug 2
@@ -55,14 +57,13 @@ class VirtualMachine : public Component::Component_t
 
         Component::BUS BUS;
 
+    public:
         const uint64_t MemBaseAddress = 0;
         const uint64_t MemSize = 0x100000000;
         const uint64_t PrinterBaseAddress = 0x100000000;
         const uint64_t PrinterSize = 0x12;
         const uint64_t PowerBaseAddress = 0x100000020;
         const uint64_t PowerSize = 0x1;
-
-    public:
 
         VirtualMachine()
         {

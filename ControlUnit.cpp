@@ -87,23 +87,25 @@ namespace Component
                 // 0b1100011 = Branch
                 DefaultValues[ 0b1100011 ].Instruction = {0x00};
                 DefaultValues[ 0b1100011 ].IDParams = {1, 1, 0b11, 0x00, 0x00};
-                DefaultValues[ 0b1100011 ].ALUOp = {1, 0x00, 0, 1, 1, 0, 0};
+                DefaultValues[ 0b1100011 ].ALUOp = {1, 0x00, 0, 0, 1, 0, 0};
                 DefaultValues[ 0b1100011 ].PCCalc = {1, 0, 1, 0x00, 0x00};
                 DefaultValues[ 0b1100011 ].MEMParamsIFtoID = {0, 0, 0, 0};
                 DefaultValues[ 0b1100011 ].WBOp = {0, 0};
 
+                // Read x0 as r2 to ensure it is zeroed out for arithmetic.
                 // 0b1100011 = JALR
                 DefaultValues[ 0b1100111 ].Instruction = {0x00};
-                DefaultValues[ 0b1100111 ].IDParams = {1, 1, 0b01, 0x00, 0};
-                DefaultValues[ 0b1100111 ].ALUOp = {1, 0b000, 0, 1, 1, 1, 1};
+                DefaultValues[ 0b1100111 ].IDParams = {1, 1, 0b11, 0x00, 0};
+                DefaultValues[ 0b1100111 ].ALUOp = {1, 0b000, 0, 0, 1, 1, 1};
                 DefaultValues[ 0b1100111 ].PCCalc = {0, 1, 0, 0, 0x00};
                 DefaultValues[ 0b1100111 ].MEMParamsIFtoID = {0, 0, 0, 0};
                 DefaultValues[ 0b1100111 ].WBOp = {1, 0x00};
 
+                // Read x0 as r2 to ensure it is zeroed out for arithmetic.
                 // 0b1101111 = JAL
                 DefaultValues[ 0b1101111 ].Instruction = {0x00};
-                DefaultValues[ 0b1101111 ].IDParams = {1, 1, 0b00, 0, 0};
-                DefaultValues[ 0b1101111 ].ALUOp = {1, 0b000, 0, 1, 1, 1, 1};
+                DefaultValues[ 0b1101111 ].IDParams = {1, 1, 0b11, 0, 0};
+                DefaultValues[ 0b1101111 ].ALUOp = {1, 0b000, 0, 0, 1, 1, 1};
                 DefaultValues[ 0b1101111 ].PCCalc = {1, 0, 0, 0, 0x00};
                 DefaultValues[ 0b1101111 ].MEMParamsIFtoID = {0, 0, 0, 0};
                 DefaultValues[ 0b1101111 ].WBOp = {1, 0x00};

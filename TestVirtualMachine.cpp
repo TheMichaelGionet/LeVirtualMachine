@@ -47,10 +47,10 @@ int main( int argc, char * argv[] )
         0x024000EF, // jal x1, Proc_Fibb
         0x00AFB123, // sd x10, 0x2, x31
         0x00A00593, // addi x11, x0, '\n'
-        0x00BF8023, // sb x11, 0x0, x31
+        0x00BF80A3, // sb x11, 0x1, x31
         0xFF813283, // ld x5, -8, x2
         0x00128293, // Main_For_Iteration: addi x5, x5, 1
-        0x01E00313, // Main_For_TestCond: addi x6, x0, 10
+        0x00A00313, // Main_For_TestCond: addi x6, x0, 10
         0xFC62EEE3, // bltu x5, x6, Main_For_Code
         0x020F8023, // Main_For_End: Main_Return: sb x0, 0x20, x31
         0x02010113, // Proc_Fibb: addi x2, x2, 32
@@ -120,7 +120,7 @@ int main( int argc, char * argv[] )
         PrintRegisterFile( RegF );
         printf( "\n-----------------------------------------------------------------------------\n\n" );
         alive = (int) leVM.PerformExecutionRound();
-        sleep(1);
+        usleep(100000);
     }
 
     result = leVM.LastHwError();

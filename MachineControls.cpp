@@ -1,6 +1,14 @@
 #ifndef VM_Machine_Controls
 #define VM_Machine_Controls
 
+#ifndef MODE
+#define Mode_Release 1
+#define Mode_Debug 2
+
+#define MODE Mode_Release
+
+#endif
+
 #include <stdint.h>
 #include "Component.hpp"
 #include "Memory.cpp"
@@ -52,6 +60,10 @@ namespace Component
             {
                 SetLastHwError( HwError_NoError );
                 uint64_t offset = index - this->startLocation;
+
+                #if MODE == Mode_Debug
+                printf( "Printer is being accessed for set with offset %ld\n", offset );
+                #endif
 
                 // print startup message
                 if( offset == 0 )

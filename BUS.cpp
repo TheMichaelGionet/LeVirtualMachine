@@ -1,6 +1,18 @@
 #ifndef VM_Component_BUS
 #define VM_Component_BUS
 
+#ifndef MODE
+#define Mode_Release 1
+#define Mode_Debug 2
+
+#define MODE Mode_Release
+
+#endif
+
+#if MODE == Mode_Debug
+#include <stdio.h>
+#endif
+
 #include <stdint.h>
 #include "HwError.hpp"
 #include "Component.hpp"
@@ -85,12 +97,16 @@ namespace Component
                 {
                     if( (lePeripherals[iterator] != NULL) && (lePeripherals[iterator]->CheckAccessibility( index, sizeof(uint8_t) ) ) )
                     {
+                        #if MODE == Mode_Debug
+                        printf( "Accessed peripheral %ld for get byte at location %ld\n", iterator, index );
+                        #endif
                         uint8_t result = lePeripherals[iterator]->GetByte(index);
                         this->SetLastHwError( lePeripherals[iterator]->LastHwError() );
                         return result;
                     }
                 }
 
+                SetLastHwError( HwError_UnknownAddress );
                 return 0;
             }
 
@@ -104,10 +120,16 @@ namespace Component
                     if( lePeripherals[iterator] != NULL )
                     if( lePeripherals[iterator]->CheckAccessibility( index, sizeof(uint8_t) ) )
                     {
+                        #if MODE == Mode_Debug
+                        printf( "Accessed peripheral %ld for set byte at location %ld\n", iterator, index );
+                        #endif
                         lePeripherals[iterator]->SetByte( index, val );
                         this->SetLastHwError( lePeripherals[iterator]->LastHwError() );
+                        return;
                     }
                 }
+
+                SetLastHwError( HwError_UnknownAddress );
             }
 
             // In this case, accessibility requires that the whole space is owned by a single peripheral.

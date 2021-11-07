@@ -1,5 +1,5 @@
 
-All: Setup TestComponents TestVmPipelines TestVmControlUnit TestVmStages TestVmBusPeripherals TestVirtualMachine
+All: Setup TestComponents TestVmPipelines TestVmControlUnit TestVmStages TestVmBusPeripherals TestVirtualMachine LeVirtualMachine
 
 Setup:
 	-mkdir debug
@@ -22,6 +22,9 @@ TestVmBusPeripherals: TestVmBusPeripherals.cpp
 
 TestVirtualMachine: 
 	g++ -std=gnu++11 -g -fpack-struct=1 -o ./debug/TestVirtualMachine TestVirtualMachine.cpp
+
+LeVirtualMachine:
+	g++ -std=gnu++11 -O2 -fpack-struct=1 -o ./bin/LeVirtualMachine LeVirtualMachine.cpp
 
 clean:
 	-rm *.o

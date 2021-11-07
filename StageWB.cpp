@@ -43,7 +43,7 @@ namespace Stage
                         RegF->SetVal( pipe.WBParams.Reg, pipe.WBParams.Val );
                         SetLastHwError( RegF->LastHwError() );
                     }
-                    else;
+                    else
                         SetLastHwError( HwError_RegisterFileMissing );
                 }
             }

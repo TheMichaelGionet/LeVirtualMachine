@@ -1,6 +1,14 @@
 #ifndef VM_VirtualMachine
 #define VM_VirtualMachine
 
+#ifndef MODE
+#define Mode_Release 1
+#define Mode_Debug 2
+
+#define MODE Mode_Release
+
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 #include "HwError.hpp"
@@ -16,6 +24,11 @@
 #include "StageEX.cpp"
 #include "StageMEM.cpp"
 #include "StageWB.cpp"
+
+#if MODE == Mode_Debug
+#include <stdio.h>
+#include "DebugPrint.hpp"
+#endif
 
 // Specs are:
 // 1MiB of ram (= 2^20 Bytes)
@@ -43,10 +56,10 @@ class VirtualMachine : public Component::Component_t
         Component::BUS BUS;
 
         const uint64_t MemBaseAddress = 0;
-        const uint64_t MemSize = 0x1000000;
-        const uint64_t PrinterBaseAddress = 0x1000000;
+        const uint64_t MemSize = 0x100000000;
+        const uint64_t PrinterBaseAddress = 0x100000000;
         const uint64_t PrinterSize = 0x12;
-        const uint64_t PowerBaseAddress = 0x1000020;
+        const uint64_t PowerBaseAddress = 0x100000020;
         const uint64_t PowerSize = 0x1;
 
     public:
@@ -65,6 +78,9 @@ class VirtualMachine : public Component::Component_t
             BUS.AddPeripheral( &Memory, 0 );
             BUS.AddPeripheral( &Printer, 1 );
             BUS.AddPeripheral( &Power, 2 );
+
+            IF.SetMemoryAccess( &BUS );
+            MEM.SetMemoryAccess( &BUS );
 
         }
 
@@ -144,9 +160,16 @@ class VirtualMachine : public Component::Component_t
 
             Stage::Pipeline_IFtoID IFtoID = IF.Perform( 0, 0 );
 
+            #if MODE == Mode_Debug
+            PrintPipeIFtoID( IFtoID );
+            #endif
+
             result = IF.LastHwError();
             if( result != HwError_NoError )
             {
+                #if MODE == Mode_Debug
+                printf( "Error on IF\n" );
+                #endif
                 SetLastHwError( result );
                 return false;
             }
@@ -154,27 +177,47 @@ class VirtualMachine : public Component::Component_t
             Instruction::ParsedInstruction lInstruction = Parser.ParseInstruction( IFtoID.Instruction.Instruction );
             Stage::Pipeline_IDtoEX IDtoEX = ID.Perform( IFtoID, lInstruction );
 
+            #if MODE == Mode_Debug
+            PrintPipeIDtoEX( IDtoEX );
+            #endif
+
             result = ID.LastHwError();
             if( result != HwError_NoError )
             {
+                #if MODE == Mode_Debug
+                printf( "Error on ID\n" );
+                #endif
                 SetLastHwError( result );
                 return false;
             }
 
             Stage::Pipeline_EXtoMEM EXtoMEM = EX.Perform( IDtoEX );
 
+            #if MODE == Mode_Debug
+            PrintPipeEXtoMEM( EXtoMEM );
+            #endif
+
             result = EX.LastHwError();
             if( result != HwError_NoError )
             {
+                #if MODE == Mode_Debug
+                printf( "Error on EX\n" );
+                #endif
                 SetLastHwError( result );
                 return false;
             }
 
             Stage::Pipeline_MEMtoWB MEMtoWB = MEM.Perform( EXtoMEM );
+            #if MODE == Mode_Debug
+            PrintPipeMEMtoWB( MEMtoWB );
+            #endif
 
             result = MEM.LastHwError();
             if( result != HwError_NoError )
             {
+                #if MODE == Mode_Debug
+                printf( "Error on MEM\n" );
+                #endif
                 SetLastHwError( result );
                 return false;
             }
@@ -184,6 +227,9 @@ class VirtualMachine : public Component::Component_t
             result = WB.LastHwError();
             if( result != HwError_NoError )
             {
+                #if MODE == Mode_Debug
+                printf( "Error on WB\n" );
+                #endif
                 SetLastHwError( result );
                 return false;
             }
@@ -191,6 +237,9 @@ class VirtualMachine : public Component::Component_t
 
             if( EXtoMEM.PCResult.ReplacePC )
             {
+                #if MODE == Mode_Debug
+                printf( "Replacing PC from %ld to %ld\n", IF.GetPCReg(), EXtoMEM.PCResult.PCVal );
+                #endif
                 uint64_t NewPCVal = EXtoMEM.PCResult.PCVal;
                 IF.ReplacePC( NewPCVal );
             }

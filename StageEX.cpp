@@ -80,7 +80,7 @@ namespace Stage
                 {
                     if( pipe.PCCalc.AddToPC )
                     {
-                        Result.SetPCVal( 1, pipe.PCCalc.PCVal + (pipe.ALUInputs.Immediate << 1) );
+                        Result.SetPCVal( 1, pipe.PCCalc.PCVal + pipe.ALUInputs.Immediate );
                     }
                     else if( pipe.PCCalc.ReplacePC )
                     {

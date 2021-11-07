@@ -18,7 +18,7 @@ namespace Stage
 
             uint64_t PCReg;
 
-            Component::MemoryAccess * leMem;
+            Component::MemoryAccess * leMem = nullptr;
             Component::ControlUnit leControl;
 
         public:

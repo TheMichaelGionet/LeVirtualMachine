@@ -118,7 +118,8 @@ namespace Component
                 uint64_t iterator;
                 for( iterator = 0; iterator < MaxNumPeripherals; iterator++ )
                 {
-                    if( (lePeripherals[iterator] != NULL) && (lePeripherals[iterator]->CheckAccessibility( index, size ) ) )
+                    if( lePeripherals[iterator] != nullptr )
+                    if( lePeripherals[iterator]->CheckAccessibility( index, size ) )
                         return true;
                 }
 

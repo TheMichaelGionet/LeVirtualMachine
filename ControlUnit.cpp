@@ -73,10 +73,11 @@ namespace Component
                 DefaultValues[ 0b0110011 ].MEMParamsIFtoID = {0, 0, 0, 0 };
                 DefaultValues[ 0b0110011 ].WBOp = {1, 0x00};
 
+                // ALUOp is set to just add the constant to 0 as a hack to get LUI to work.
                 // 0b0110111 = LUI
                 DefaultValues[ 0b0110111 ].Instruction = {0x00};
                 DefaultValues[ 0b0110111 ].IDParams = {1, 1, 0b00, 0, 0};
-                DefaultValues[ 0b0110111 ].ALUOp = {0, 0, 0, 0, 0, 0, 0};
+                DefaultValues[ 0b0110111 ].ALUOp = {1, 0, 0, 1, 1, 0, 0};
                 DefaultValues[ 0b0110111 ].PCCalc = {0, 0, 0, 0, 0x00};
                 DefaultValues[ 0b0110111 ].MEMParamsIFtoID = {0, 0, 0, 0};
                 DefaultValues[ 0b0110111 ].WBOp = {1, 0x00};

@@ -21,7 +21,7 @@ TestVmBusPeripherals: TestVmBusPeripherals.cpp
 	g++ -std=gnu++11 -fpack-struct=1 -o ./debug/TestVmBusPeripherals TestVmBusPeripherals.cpp
 
 TestVirtualMachine: 
-	g++ -std=gnu++11 -fpack-struct=1 -o ./debug/TestVirtualMachine TestVirtualMachine.cpp
+	g++ -std=gnu++11 -g -fpack-struct=1 -o ./debug/TestVirtualMachine TestVirtualMachine.cpp
 
 clean:
 	-rm *.o

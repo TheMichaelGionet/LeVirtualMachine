@@ -33,7 +33,7 @@ int main( int argc, char * argv[] )
 {
 
     printf( "##########################################################################\n" );
-    printf( "Testing Virtual Machine with a fibbonachi program. (finds Fibb(n) recursively in O(2^n) time).\n" );
+    printf( "Testing Virtual Machine with a fibbonachi program. (finds Fibb(n) recursively in O(phi^n) time).\n" );
 
     uint32_t FibbonachiTestProgram[] = {
         0x70000137, // Main: lui x2 0x70000

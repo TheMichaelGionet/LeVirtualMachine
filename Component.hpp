@@ -28,6 +28,7 @@ namespace Component
         Component_ID_Printer,
         Component_ID_Power,
         Component_ID_MemoryUnit,
+        Component_ID_Keyboard,
 
         Component_ID_VirtualMachine,
 

@@ -54,6 +54,7 @@ class VirtualMachine : public Component::Component_t
         Component::MachineMemory Memory;
         Component::Printer Printer;
         Component::MachinePower Power;
+        Component::Keyboard Keyboard;
 
         Component::BUS BUS;
 
@@ -64,6 +65,8 @@ class VirtualMachine : public Component::Component_t
         const uint64_t PrinterSize = 0x12;
         const uint64_t PowerBaseAddress = 0x100000020;
         const uint64_t PowerSize = 0x1;
+        const uint64_t KeyboardBaseAddress = 0x100000030; // Leave room for future expansion.
+        const uint64_t KeyboardSize = 0x1;
 
         VirtualMachine()
         {
@@ -75,10 +78,12 @@ class VirtualMachine : public Component::Component_t
             Memory.SetRange( MemBaseAddress, MemSize );
             Printer.SetRange( PrinterBaseAddress, PrinterSize );
             Power.SetRange( PowerBaseAddress, PowerSize );
+            Keyboard.SetRange( KeyboardBaseAddress, KeyboardSize );
 
             BUS.AddPeripheral( &Memory, 0 );
             BUS.AddPeripheral( &Printer, 1 );
             BUS.AddPeripheral( &Power, 2 );
+            BUS.AddPeripheral( &Keyboard, 3 );
 
             IF.SetMemoryAccess( &BUS );
             MEM.SetMemoryAccess( &BUS );
@@ -103,6 +108,10 @@ class VirtualMachine : public Component::Component_t
                 return result;
 
             result = Power.Setup();
+            if( result != HwError_NoError )
+                return result;
+
+            result = Keyboard.Setup();
             if( result != HwError_NoError )
                 return result;
 

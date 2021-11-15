@@ -15,7 +15,6 @@
 #include "BUS.cpp"
 #include <stdio.h>
 
-
 namespace Component
 {
 
@@ -245,6 +244,45 @@ namespace Component
                 return access;
             }
 
+    };
+
+    class Keyboard : public Peripheral
+    {
+        public:
+
+            Component_ID GetID() override
+            {
+                return Component_ID_Keyboard;
+            }
+
+            uint64_t RequiredAddressSpace()
+            {
+                return 1;
+            }
+
+            uint8_t GetByte( uint64_t index ) override
+            {
+                SetLastHwError( HwError_NoError );
+                uint64_t offset = index - this->startLocation;
+
+                if( offset == 0 )
+                {
+                    return getchar();
+                }
+            }
+
+            void SetByte( uint64_t index, uint8_t val ) override
+            {
+                SetLastHwError( HwError_UnknownAddress );
+            }
+
+            bool CheckAccessibility( uint64_t index, uint64_t size ) override
+            {
+                uint64_t offset = index - this->startLocation;
+                return offset == 0;
+            }
+
+            
     };
 };
 

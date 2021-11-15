@@ -7,20 +7,20 @@ namespace Stage
 {
     // Pipeline sections
 
-    class __attribute__((packed)) Section_Instruction;
-    class __attribute__((packed)) Section_WBOp;
-    class __attribute__((packed)) Section_WBParams;
-    class __attribute__((packed)) Section_MEMParams;
-    class __attribute__((packed)) Section_MEMParamsIDtoEX;
-    class __attribute__((packed)) Section_MEMParamsIFtoID;
-    class __attribute__((packed)) Section_PCResult;
-    class __attribute__((packed)) Section_PCCalc;
-    class __attribute__((packed)) Section_ALUInputs;
-    class __attribute__((packed)) Section_ALUOp;
-    class __attribute__((packed)) Section_IDParams;
+    class Section_Instruction;
+    class Section_WBOp;
+    class Section_WBParams;
+    class Section_MEMParams;
+    class Section_MEMParamsIDtoEX;
+    class Section_MEMParamsIFtoID;
+    class Section_PCResult;
+    class Section_PCCalc;
+    class Section_ALUInputs;
+    class Section_ALUOp;
+    class Section_IDParams;
 
 
-    class __attribute__((packed)) Section_Instruction
+    class Section_Instruction
     {
         public:
 
@@ -42,7 +42,7 @@ namespace Stage
         }
     };
 
-    class __attribute__((packed)) Section_WBOp
+    class Section_WBOp
     {
         public:
 
@@ -63,7 +63,7 @@ namespace Stage
 
     };
 
-    class __attribute__((packed)) Section_WBParams
+    class Section_WBParams
     {
         public:
 
@@ -97,7 +97,7 @@ namespace Stage
         }
     };
 
-    class __attribute__((packed)) Section_MEMParamsIFtoID
+    class Section_MEMParamsIFtoID
     {
         public:
 
@@ -124,7 +124,7 @@ namespace Stage
 
     };
 
-    class __attribute__((packed)) Section_MEMParamsIDtoEX
+    class Section_MEMParamsIDtoEX
     {
         public:
 
@@ -166,7 +166,7 @@ namespace Stage
         }
     };
 
-    class __attribute__((packed)) Section_MEMParams
+    class Section_MEMParams
     {
         public:
 
@@ -213,7 +213,7 @@ namespace Stage
 
     };
 
-    class __attribute__((packed)) Section_PCCalc
+    class Section_PCCalc
     {
         public:
         uint8_t AddToPC : 1; // add the immediate to PC
@@ -241,7 +241,7 @@ namespace Stage
         }
     };
 
-    class __attribute__((packed)) Section_PCResult
+    class Section_PCResult
     {
         public:
         uint8_t ReplacePC : 1; // Replace PC with PCVal (different from ReplacePC from bellow)
@@ -260,7 +260,7 @@ namespace Stage
         }
     };
 
-    class __attribute__((packed)) Section_ALUOp
+    class Section_ALUOp
     {
         public:
 
@@ -295,7 +295,7 @@ namespace Stage
         }
     };
 
-    class __attribute__((packed)) Section_ALUInputs
+    class Section_ALUInputs
     {
         public:
 
@@ -365,7 +365,7 @@ namespace Stage
 
     };
 
-    class __attribute__((packed)) Section_IDParams
+    class Section_IDParams
     {
         public:
 
@@ -403,12 +403,12 @@ namespace Stage
     //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    class __attribute__((packed)) Pipeline_MEMtoWB;
-    class __attribute__((packed)) Pipeline_EXtoMEM;
-    class __attribute__((packed)) Pipeline_IDtoEX;
-    class __attribute__((packed)) Pipeline_IFtoID;
+    class Pipeline_MEMtoWB;
+    class Pipeline_EXtoMEM;
+    class Pipeline_IDtoEX;
+    class Pipeline_IFtoID;
 
-    class __attribute__((packed)) Pipeline_IFtoID
+    class Pipeline_IFtoID
     {
         public:
 
@@ -431,7 +431,7 @@ namespace Stage
 
     };
 
-    class __attribute__((packed)) Pipeline_IDtoEX
+    class Pipeline_IDtoEX
     {
         public:
 
@@ -474,7 +474,7 @@ namespace Stage
 
     };
 
-    class __attribute__((packed)) Pipeline_EXtoMEM
+    class Pipeline_EXtoMEM
     {
         public:
         Section_Instruction Instruction;
@@ -516,7 +516,7 @@ namespace Stage
 
     };
 
-    class __attribute__((packed)) Pipeline_MEMtoWB
+    class Pipeline_MEMtoWB
     {
         public:
 

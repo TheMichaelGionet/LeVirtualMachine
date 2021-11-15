@@ -24,7 +24,7 @@ TestVirtualMachine:
 	g++ -std=gnu++11 -g -fpack-struct=1 -o ./debug/TestVirtualMachine TestVirtualMachine.cpp
 
 LeVirtualMachine:
-	g++ -std=gnu++11 -O2 -fpack-struct=1 -o ./bin/LeVirtualMachine LeVirtualMachine.cpp
+	g++ -std=gnu++11 -O2 -o ./bin/LeVirtualMachine LeVirtualMachine.cpp
 
 clean:
 	-rm *.o
